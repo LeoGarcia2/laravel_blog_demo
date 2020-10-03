@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Laravel</title>
+</head>
+<body>
+
+    <h1>Get started</h1>
+    <section>
+        <p>Install Composer</p>
+        <p>Install NodeJS</p>
+    </section>
+
+    <h1>Console Commands</h1>
+    <section>
+        <h2>Install Laravel</h2>
+        <p>composer global require laravel/installer</p>
+    </section>
+    <section>
+        <h2>Create app</h2>
+        <p>laravel new NameApp</p>
+    </section>
+    <section>
+        <h2>Install UI</h2>
+        <p>composer require laravel/ui</p>
+    </section>
+    <section>
+        <h2>Artisan</h2>
+        <p>php artisan cache:clear</p>
+        <p>php artisan view:clear</p>
+        <p>php artisan route:clear</p>
+        <p>php artisan make:controller NameController (--resource to generate methods)</p>
+        <p>php artisan make:model Name (-m for migration)</p>
+        <p>php artisan ui vue --auth (Then npm install and npm run dev)</p>
+        <p>php artisan migrate</p>
+        <p>php artisan ui:auth</p>
+        <p>php artisan tinker</p>
+        <p>php artisan route:list</p>
+        <p>php artisan storage:link</p>
+    </section>
+
+    <h1>Controllers</h1>
+    <section>
+        <h2>Return view</h2>
+        <p>return view('folder.file', ['var' => $var]);</p>
+    </section>
+    <section>
+        <h2>Get data from Database</h2>
+        <p>use App\Models\NameModel;</p>
+        <p>NameModel::all();</p>
+        <p>NameModel::orderBy('field', 'asc|desc')->get();</p>
+        <p>NameModel::find($id);</p>
+        <p>Via DB class</p>
+        <p>use DB;</p>
+        <p>DB::Select('SELECT * FROM table');</p>
+    </section>
+    <section>
+        <h2>Forms to hydrate Database</h2>
+        <p>composer require laravelcollective/html</p>
+        <p>Form in view</p>
+        <pre>
+{!! Form::open(['action' => 'NameController@method', 'method' => 'POST', 'enctype' => 'multipart/form-data']) !!}
+    {{ Form::label('field', 'Text') }}
+    {{ Form::typeField('field', 'value if in update', ['html_property' => 'value']) }}
+    {{ Form::submit('Text', ['html_property' => 'value']) }}
+{!! Form::close() !!}
+        </pre>
+        <p>Controller store or update method</p>
+        <pre>
+$this->validate($request, [
+    'field' => 'required',
+    'image' => 'image|nullable|max:1999'
+]);
+
+if ($request->hasFile('image')) {
+    $filenamePlusExtension = $request->file('image')->getClientOriginalName();
+    $filename = pathinfo($filenamePlusExtension, PATHINFO_FILENAME);
+    $extension = $request->file('image')->getClientOriginalExtension();
+    
+    $filenameToStore = $filename . '_' . time() . '.' . $extension;
+
+    $path = $request->file('image')->storeAs('public/folder', $filenameToStore);
+} else {
+    $filenameToStore = 'default';
+}
+
+$nameModel = new NameModel(); //if in update Post::find($id);
+$nameModel->field = $request->input('field');
+$nameModel->image = $filenameToStore;
+$nameModel->save();
+return redirect('/url')->with('success', 'Message');
+        </pre>
+        <p>Error/success popup</p>
+        <pre>
+@if(count($errors) > 0)
+    @foreach($errors->all() as $error)
+        {{ $error }}
+    @endforeach
+@endif
+
+@if(session('success'))
+    {{ session('success') }}
+@endif
+
+@if(session('error'))
+    {{ session('error') }}
+@endif
+        </pre>
+        <p>View form edit</p>
+        <pre>
+{!! Form::open(['action' => ['NameController@method', $nameModel->id], 'method' => 'POST']) !!}
+    {{ Form::hidden('_method', 'PUT') }}
+{!! Form::close() !!}
+        </pre>
+        <p>View form button delete</p>
+        <pre>
+{!! Form::open(['action' => ['NameController@method', $nameModel->id], 'method' => 'POST']) !!}
+    {{ Form::submit('Delete') }}
+    {{ Form::hidden('_method', 'DELETE') }}
+{!! Form::close() !!}
+        </pre>
+        <p>Controller destroy method</p>
+        <pre>
+$nameModel = Post::find($id);
+$nameModel->delete();
+        </pre>
+        <p>Delete image on destroy</p>
+        <pre>
+use Illuminate\Support\Facades\Storage;   
+if ($nameModel->image != 'textForNoImage') {
+    Storage::delete('/public/folder/' . $nameModel->image);
+}
+        </pre>
+    </section>
+    <section>
+        <h2>Add authentication for pages</h2>
+        <pre>
+/**
+* Create a new controller instance.
+*
+* @return void
+*/
+public function __construct()
+{
+    $this->middleware('auth', ['except' => ['method']]);
+}
+        </pre>
+    </section>
+
+    <h1>Router</h1>
+    <section>
+        <h2>Get controller</h2>
+        <p>use App\Http\Controllers\NameController;</p>
+        <p>Route::get('/url/{var}', 'App\Http\Controllers\NameController@method')->name('nameRoute');</p>
+    </section>
+
+    <h1>Views</h1>
+    <section>
+        <h2>Get .env var</h2>
+        <p>{{ config('app.var', 'default') }}</p>
+    </section>
+    <section>
+        <h2>Inheritance</h2>
+        <p>Parent : @yield('content')</p>
+        <p>Children : @extends('folder.file')</p>
+        <p>@section('content')</p>
+        <p>@endsection</p>
+    </section>
+    <section>
+        <h2>Loops</h2>
+        <p>@if(count($vars) > 0)</p>
+        <p>@foreach($vars as $var)</p>
+        <p>@endforeach</p>
+        <p>@endif</p>
+    </section>
+    <section>
+        <h2>Routes</h2>
+        <p>{{ route('nameRoute', ['var' => $var->prop]) }}</p>
+    </section>
+    <section>
+        <h2>Include view</h2>
+        <p>@include('folder.file')</p>
+    </section>
+    
+    <h1>Database</h1>
+    <section>
+        <h2>Edit migrations</h2>
+        <p>$table->type('name');</p>
+    </section>
+    <section>
+        <h2>Before migration</h2>
+        <p>Edit AppServiceProvider</p>
+        <p>use Illuminate\Support\Facades\Schema;</p>
+        <p>In boot() : Schema::defaultStringLength(191);</p>
+    </section>
+    <section>
+        <h2>Relation between tables</h2>
+        <p>In NameModel.php (child)</p>
+        <pre>
+public function parent () {
+    return $this->belongsTo('App\Models\NameParent');
+}
+        </pre>
+        <p>In NameModel.php (parent)</p>
+        <pre>
+public function children () {
+    return $this->HasMany('App\Models\NameChild');
+}
+        </pre>
+        <p>In controller to retrieve linked models assuming parent is User</p>
+        <pre>
+$user_id = auth()->user()->id;
+$user = User::find($user_id);
+$nameChildren = $user->children;
+        </pre>
+    </section>
+    <section>
+        <h2>Check if user logged in</h2>
+        <p>@if(!Auth::guest())</p>
+    </section>
+    <section>
+        <h2>Check if user is</h2>
+        <p>@if(Auth::user()->id == $nameModel->user_id)</p>
+    </section>
+</body>
+</html>
